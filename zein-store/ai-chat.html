@@ -1,54 +1,482 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>زين - المساعد الذكي | ZEIN Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/ai-chat-page.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>زين - المساعد الذكي | ZEIN Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+/* ===== Reset ===== */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100vh;height:100dvh;overflow:hidden;font-family:'Tajawal',sans-serif;font-size:16px}
+body{background:linear-gradient(180deg,#f5f5f5,#ebebeb);display:flex;flex-direction:column}
+
+/* ===== Header ===== */
+.chat-header{background:linear-gradient(135deg,#111,#2a2a2a);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,.2);position:relative;z-index:10;flex-shrink:0}
+.chat-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C9A961,#b89651,#C9A961)}
+.header-btn{width:44px;height:44px;background:rgba(255,255,255,.12);border:none;border-radius:50%;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0;text-decoration:none}
+.header-btn:hover{background:rgba(255,255,255,.28);transform:scale(1.08)}
+.header-title{display:flex;align-items:center;gap:12px;flex:1;justify-content:center}
+.header-avatar{width:52px;height:52px;background:linear-gradient(135deg,#C9A961,#b89651);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid rgba(255,255,255,.25);position:relative;box-shadow:0 4px 15px rgba(201,169,97,.4);flex-shrink:0}
+.header-avatar::after{content:'';position:absolute;bottom:1px;left:1px;width:14px;height:14px;background:#4ade80;border:3px solid #111;border-radius:50%}
+.header-text h1{font-size:20px;font-weight:800;color:#fff;line-height:1.2}
+.header-text p{font-size:13px;color:#4ade80;display:flex;align-items:center;gap:5px;margin-top:2px}
+.online-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.header-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* ===== Messages ===== */
+.chat-messages{flex:1;overflow-y:auto;overflow-x:hidden;padding:22px 20px;display:flex;flex-direction:column;gap:14px;max-width:900px;width:100%;margin:0 auto;scroll-behavior:smooth}
+.chat-messages::-webkit-scrollbar{width:8px}
+.chat-messages::-webkit-scrollbar-thumb{background:#C9A961;border-radius:4px}
+
+.msg{max-width:80%;padding:15px 20px;border-radius:22px;font-size:17px;line-height:1.7;word-wrap:break-word;white-space:pre-wrap;animation:msgIn .35s ease;font-weight:500}
+@keyframes msgIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.msg-bot{background:#fff;color:#1a1a1a;align-self:flex-start;border-bottom-left-radius:6px;box-shadow:0 3px 18px rgba(0,0,0,.08);border:1px solid #f0f0f0}
+.msg-user{background:linear-gradient(135deg,#C9A961,#b89651);color:#fff;align-self:flex-end;border-bottom-right-radius:6px;box-shadow:0 4px 18px rgba(201,169,97,.35);font-weight:600}
+
+.msg-typing{display:flex;gap:6px;padding:18px 24px;align-items:center;background:#fff;border-radius:22px;border-bottom-left-radius:6px;align-self:flex-start;box-shadow:0 3px 18px rgba(0,0,0,.08);border:1px solid #f0f0f0}
+.msg-typing span{width:10px;height:10px;background:#C9A961;border-radius:50%;animation:typing 1.4s infinite}
+.msg-typing span:nth-child(2){animation-delay:.2s}
+.msg-typing span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-9px);opacity:1}}
+
+/* ===== Bottom ===== */
+.chat-bottom{flex-shrink:0;background:#fff;border-top:1px solid #eee;box-shadow:0 -6px 24px rgba(0,0,0,.06)}
+.chat-quick{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px 6px;justify-content:center;max-width:900px;margin:0 auto}
+.chat-quick button{padding:11px 20px;background:#fff;border:2px solid #C9A961;color:#C9A961;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;white-space:nowrap}
+.chat-quick button:hover{background:linear-gradient(135deg,#C9A961,#b89651);color:#fff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,169,97,.4)}
+
+.chat-input-wrap{padding:8px 18px 18px;max-width:900px;margin:0 auto;width:100%}
+.chat-input-box{display:flex;gap:8px;align-items:flex-end;background:#f7f7f7;border-radius:30px;padding:8px 8px 8px 12px;border:2px solid #eee;transition:all .25s}
+.chat-input-box:focus-within{border-color:#C9A961;box-shadow:0 0 0 5px rgba(201,169,97,.12);background:#fff}
+
+.chat-input{flex:1;padding:10px 6px;border:none;background:transparent;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:500;resize:none;max-height:140px;min-height:28px;outline:none;color:#1a1a1a;line-height:1.5}
+.chat-input::placeholder{color:#999}
+
+.input-btn{width:50px;height:50px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .25s;flex-shrink:0;border:none}
+.mic-btn{background:#fff;border:2px solid #C9A961;color:#C9A961}
+.mic-btn:hover{background:#C9A961;color:#fff;transform:scale(1.08)}
+.mic-btn.recording{background:#dc2626;border-color:#dc2626;color:#fff;animation:micPulse 1s infinite}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(220,38,38,.7)}70%{box-shadow:0 0 0 18px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+.send-btn{background:linear-gradient(135deg,#C9A961,#b89651);color:#fff;box-shadow:0 4px 15px rgba(201,169,97,.45)}
+.send-btn:hover{transform:scale(1.08) rotate(-15deg);box-shadow:0 6px 22px rgba(201,169,97,.65)}
+.send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ===== Mobile ===== */
+@media(max-width:768px){
+  .chat-header{padding:10px 12px;gap:8px}
+  .header-btn{width:40px;height:40px;font-size:18px}
+  .header-avatar{width:44px;height:44px;font-size:22px}
+  .header-avatar::after{width:12px;height:12px;border-width:2px}
+  .header-text h1{font-size:17px}
+  .header-text p{font-size:11px}
+  .header-actions{gap:6px}
+  .chat-messages{padding:14px 12px;gap:10px}
+  .msg{max-width:88%;font-size:16px;padding:13px 17px}
+  .chat-quick{padding:10px 12px 4px;gap:6px}
+  .chat-quick button{font-size:14px;padding:9px 16px}
+  .chat-input-wrap{padding:6px 12px 14px}
+  .chat-input-box{padding:6px 6px 6px 10px}
+  .chat-input{font-size:15px;padding:9px 5px}
+  .input-btn{width:44px;height:44px;font-size:18px}
+}
+</style>
 </head>
-<body class="chat-page-body">
+<body>
 
-    <header class="chat-header">
-        <a href="index.html" class="header-btn back-btn" title="العودة">→</a>
-        <div class="header-title">
-            <div class="header-avatar">🤖</div>
-            <div class="header-text">
-                <h1>زين</h1>
-                <p><span class="online-dot"></span> متصل الآن</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button class="header-btn" id="voiceToggleBtn" onclick="toggleVoice()" title="الصوت">🔊</button>
-            <button class="header-btn" onclick="clearChatPage()" title="محادثة جديدة">🔄</button>
-        </div>
-    </header>
-
-    <main class="chat-messages" id="chatMessages"></main>
-
-    <div class="chat-bottom">
-        <div class="chat-quick" id="chatQuickReplies">
-            <button onclick="sendQuickReply('عايز قميص')">👔 قميص</button>
-            <button onclick="sendQuickReply('إيه سياسة الشحن؟')">🚚 الشحن</button>
-            <button onclick="sendQuickReply('إيه سياسة الإرجاع؟')">🔄 الإرجاع</button>
-            <button onclick="sendQuickReply('طرق الدفع إيه؟')">💳 الدفع</button>
-            <button onclick="sendQuickReply('عايز أتواصل مع حد')">💬 تواصل</button>
-        </div>
-        <div class="chat-input-wrap">
-            <div class="chat-input-box">
-                <button class="input-btn mic-btn" id="chatMicBtn" onclick="toggleMicPage()" title="اتكلم">🎤</button>
-                <textarea id="chatInput" class="chat-input" rows="1" placeholder="اكتب رسالتك أو اضغط 🎤 واتكلم..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitChat();}" oninput="autoResize(this)"></textarea>
-                <button class="input-btn send-btn" id="chatSendBtn" onclick="submitChat()" title="إرسال">➤</button>
-            </div>
-        </div>
+<header class="chat-header">
+  <a href="index.html" class="header-btn" title="العودة">→</a>
+  <div class="header-title">
+    <div class="header-avatar">🤖</div>
+    <div class="header-text">
+      <h1>زين</h1>
+      <p><span class="online-dot"></span> متصل الآن</p>
     </div>
+  </div>
+  <div class="header-actions">
+    <button class="header-btn" id="voiceToggleBtn" onclick="toggleVoice()" title="الصوت">🔊</button>
+    <button class="header-btn" onclick="clearChatPage()" title="محادثة جديدة">🔄</button>
+  </div>
+</header>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/products-data.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/ai-chat-page.js"></script>
+<main class="chat-messages" id="chatMessages"></main>
+
+<div class="chat-bottom">
+  <div class="chat-quick" id="chatQuickReplies">
+    <button onclick="sendQuickReply('عايز قميص')">👔 قميص</button>
+    <button onclick="sendQuickReply('إيه سياسة الشحن؟')">🚚 الشحن</button>
+    <button onclick="sendQuickReply('إيه سياسة الإرجاع؟')">🔄 الإرجاع</button>
+    <button onclick="sendQuickReply('طرق الدفع إيه؟')">💳 الدفع</button>
+    <button onclick="sendQuickReply('عايز أتواصل مع حد')">💬 تواصل</button>
+  </div>
+  <div class="chat-input-wrap">
+    <div class="chat-input-box">
+      <button class="input-btn mic-btn" id="chatMicBtn" onclick="toggleMicPage()" title="اتكلم">🎤</button>
+      <textarea id="chatInput" class="chat-input" rows="1" placeholder="اكتب رسالتك أو اضغط 🎤 واتكلم..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitChat();}" oninput="autoResize(this)"></textarea>
+      <button class="input-btn send-btn" id="chatSendBtn" onclick="submitChat()" title="إرسال">➤</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/products-data.js"></script>
+
+<script>
+// ===== AI Chat Page - Self Contained =====
+const PAGE_MODEL = 'allam-2-7b';
+const PAGE_WHATSAPP = '201094040203';
+const AI_API_KEY = ''; // ⚠️ مفتاح Groq بتاعك
+
+let pageHistory = [];
+let pageLoading = false;
+let pageProducts = [];
+let pageRecognition = null;
+let pageRecording = false;
+let voiceEnabled = true;
+
+window.addEventListener('load', function() {
+  loadVoicePreference();
+  loadProducts();
+  showWelcome();
+});
+
+function loadVoicePreference() {
+  var saved = localStorage.getItem('zein-voice-enabled');
+  if (saved !== null) voiceEnabled = saved === 'true';
+  updateVoiceButton();
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  localStorage.setItem('zein-voice-enabled', voiceEnabled);
+  updateVoiceButton();
+  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function updateVoiceButton() {
+  var btn = document.getElementById('voiceToggleBtn');
+  if (!btn) return;
+  btn.innerHTML = voiceEnabled ? '🔊' : '🔇';
+  btn.style.background = voiceEnabled ? 'linear-gradient(135deg, #C9A961, #b89651)' : 'rgba(255,255,255,0.12)';
+}
+
+function speakText(text) {
+  if (!voiceEnabled) return;
+  if (!window.speechSynthesis) return;
+  
+  window.speechSynthesis.cancel();
+  
+  var clean = text
+    .replace(/[\u{1F600}-\u{1F64F}]/gu,'')
+    .replace(/[\u{1F300}-\u{1F5FF}]/gu,'')
+    .replace(/[\u{1F680}-\u{1F6FF}]/gu,'')
+    .replace(/[\u{2600}-\u{26FF}]/gu,'')
+    .replace(/[\u{2700}-\u{27BF}]/gu,'')
+    .replace(/[•▪️➡️💙👔🚚🔄💳💬🎤🔊🔇🤖✨🌟⭐🇪🇬]/g,'')
+    .replace(/[*_~`#]/g,'')
+    .replace(/\n+/g,'. ')
+    .trim();
+  
+  if (!clean) return;
+  
+  var lang = localStorage.getItem('zein-lang') || 'ar';
+  var targetLangCode = lang === 'ar' ? 'ar-EG' : 'en-US';
+  
+  function doSpeak() {
+    var voices = window.speechSynthesis.getVoices();
+    
+    // اختار أفضل صوت عربي
+    var bestVoice = null;
+    if (lang === 'ar') {
+      // 1) صوت عربي مصري
+      bestVoice = voices.find(function(v){ 
+        return v.lang && (v.lang === 'ar-EG' || v.lang === 'ar_EG' || v.lang === 'ar-SA'); 
+      });
+      // 2) أي صوت عربي
+      if (!bestVoice) {
+        bestVoice = voices.find(function(v){ 
+          return v.lang && v.lang.toLowerCase().indexOf('ar') === 0; 
+        });
+      }
+    } else {
+      bestVoice = voices.find(function(v){ 
+        return v.lang && v.lang.toLowerCase().indexOf('en') === 0; 
+      });
+    }
+    
+    console.log('🎤 Target:', targetLangCode, '| Selected voice:', bestVoice ? bestVoice.name + ' (' + bestVoice.lang + ')' : 'DEFAULT');
+    
+    var utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = targetLangCode;
+    utter.rate = 0.95;
+    utter.pitch = 1.0;
+    utter.volume = 1.0;
+    
+    if (bestVoice) {
+      utter.voice = bestVoice;
+    }
+    
+    window.speechSynthesis.speak(utter);
+  }
+  
+  // لو الأصوات محملة، اتكلم على طول
+  if (window.speechSynthesis.getVoices().length > 0) {
+    doSpeak();
+  } else {
+    // استنى الأصوات تحمل
+    var checkCount = 0;
+    var checkInterval = setInterval(function() {
+      checkCount++;
+      if (window.speechSynthesis.getVoices().length > 0 || checkCount > 20) {
+        clearInterval(checkInterval);
+        doSpeak();
+      }
+    }, 100);
+  }
+}
+
+function fallbackSpeak(clean) {
+  if (!window.speechSynthesis) return;
+  var utter = new SpeechSynthesisUtterance(clean);
+  var lang = localStorage.getItem('zein-lang') || 'ar';
+  utter.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+  window.speechSynthesis.speak(utter);
+}
+
+function stopSpeaking() {
+  if (window.currentAudio) {
+    try { window.currentAudio.pause(); } catch(e) {}
+    window.currentAudio = null;
+  }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function stopSpeaking() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+function loadProducts() {
+  if (!window.db) {
+    console.warn('Firebase not ready');
+    return;
+  }
+  db.collection('products').get().then(function(snap) {
+    pageProducts = [];
+    snap.forEach(function(doc) {
+      var data = doc.data();
+      if (data.published !== false) pageProducts.push(data);
+    });
+    console.log('✅ Loaded ' + pageProducts.length + ' products');
+  }).catch(function(err) {
+    console.error('Products error:', err);
+  });
+}
+
+function showWelcome() {
+  var msg = 'أهلاً بيك في ZEIN Store! 👋\nأنا زين، مساعدك الشخصي في المتجر.\n\nاسألني عن أي حاجة:\n• 👔 المنتجات والأسعار\n• 📏 المقاسات والألوان\n• 🚚 الشحن والإرجاع\n• 💳 طرق الدفع\n\nأو اضغط على زرار 🎤 عشان تتكلم!';
+  addPageMsg('bot', msg);
+  speakText('أهلاً بيك في زين ستور! أنا زين، مساعدك الشخصي. اسألني عن أي حاجة في المتجر.');
+}
+
+function buildPagePrompt() {
+  var productsText = '';
+  if (pageProducts.length > 0) {
+    productsText = '\n\n📦 المنتجات المتاحة:\n';
+    for (var i = 0; i < pageProducts.length; i++) {
+      var p = pageProducts[i];
+      productsText += '\n' + (i+1) + '. ' + (p.name ? p.name.ar : 'منتج') + '\n';
+      productsText += '   - الماركة: ' + (p.brand || '-') + '\n';
+      productsText += '   - السعر: ' + p.price + ' ج.م';
+      if (p.oldPrice && p.oldPrice > p.price) productsText += ' (بدلاً من ' + p.oldPrice + ' ج.م)';
+      productsText += '\n';
+      if (p.sizes && p.sizes.length) productsText += '   - المقاسات: ' + p.sizes.join(', ') + '\n';
+      if (p.desc) productsText += '   - الوصف: ' + p.desc.ar + '\n';
+    }
+  } else {
+    productsText = '\n\nلا توجد منتجات حالياً.\n';
+  }
+  return 'أنت "زين" — المساعد الذكي لمتجر ZEIN Store (ملابس رجالية).\n\n🎯 شخصيتك:\n- ودود ومحترم\n- بتتكلم بالعربي المصري البسيط\n- ردودك مختصرة ومفيدة (1-3 جمل)\n\n📋 مهامك:\n1. الرد على أسئلة المنتجات\n2. ترشيح منتجات مناسبة\n3. سياسات المتجر:\n   • الشحن: مجاني للطلبات فوق 500 ج.م، وإلا 50 ج.م\n   • الدفع: إنستا باي أو دفع عند الاستلام\n   • الإرجاع: مجاني خلال 14 يوم\n   • التوصيل: 2-5 أيام عمل\n4. لو محتاج مساعدة بشرية، قوله يكتب "واتساب"\n\n⚠️ قواعد:\n- اعتمد على البيانات اللي تحت بس\n- متخترعش أسعار\n' + productsText;
+}
+
+async function submitChat() {
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text || pageLoading) return;
+  input.value = '';
+  input.style.height = 'auto';
+  await sendToAI(text);
+}
+
+function sendQuickReply(text) {
+  if (pageLoading) return;
+  sendToAI(text);
+}
+
+async function sendToAI(userMsg) {
+  if (pageLoading) return;
+  stopSpeaking();
+  
+  if (userMsg.toLowerCase().includes('واتساب') || userMsg.toLowerCase().includes('تواصل') || userMsg.toLowerCase().includes('whatsapp')) {
+    addPageMsg('user', userMsg);
+    var reply = 'تمام! بفتحلك واتساب حالاً 💬';
+    addPageMsg('bot', reply);
+    speakText(reply);
+    setTimeout(function() {
+      window.open('https://wa.me/' + PAGE_WHATSAPP + '?text=' + encodeURIComponent('مرحباً، أحتاج مساعدة'), '_blank');
+    }, 800);
+    return;
+  }
+  
+  addPageMsg('user', userMsg);
+  pageHistory.push({ role: 'user', content: userMsg });
+  showTyping();
+  pageLoading = true;
+  disableInput(true);
+  
+  try {
+    var messages = [{ role: 'system', content: buildPagePrompt() }];
+    var recent = pageHistory.slice(-10);
+    for (var i = 0; i < recent.length; i++) messages.push(recent[i]);
+    
+    var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + AI_API_KEY
+      },
+      body: JSON.stringify({
+        model: PAGE_MODEL,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    });
+    
+    var data = await response.json();
+    hideTyping();
+    
+    if (data.error) {
+      addPageMsg('bot', '❌ معلش فيه مشكلة تقنية. جرب تاني.');
+      console.error(data.error);
+    } else {
+      var reply = data.choices[0].message.content;
+      pageHistory.push({ role: 'assistant', content: reply });
+      addPageMsg('bot', reply);
+      speakText(reply);
+    }
+  } catch (err) {
+    hideTyping();
+    console.error(err);
+    addPageMsg('bot', '❌ مشكلة في الاتصال. جرب تاني.');
+  }
+  
+  pageLoading = false;
+  disableInput(false);
+}
+
+function addPageMsg(type, text) {
+  var area = document.getElementById('chatMessages');
+  if (!area) return;
+  var msg = document.createElement('div');
+  msg.className = 'msg msg-' + type;
+  msg.textContent = text;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping() {
+  var area = document.getElementById('chatMessages');
+  var t = document.createElement('div');
+  t.className = 'msg-typing';
+  t.id = 'pageTypingIndicator';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  area.appendChild(t);
+  area.scrollTop = area.scrollHeight;
+}
+
+function hideTyping() {
+  var t = document.getElementById('pageTypingIndicator');
+  if (t) t.remove();
+}
+
+function disableInput(disabled) {
+  var btn = document.getElementById('chatSendBtn');
+  if (btn) btn.disabled = disabled;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+function clearChatPage() {
+  if (!confirm('بدء محادثة جديدة؟')) return;
+  stopSpeaking();
+  document.getElementById('chatMessages').innerHTML = '';
+  pageHistory = [];
+  showWelcome();
+}
+
+function toggleMicPage() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('معلش، استخدم Chrome أو Edge للميكروفون.');
+    return;
+  }
+  var micBtn = document.getElementById('chatMicBtn');
+  var input = document.getElementById('chatInput');
+  var lang = localStorage.getItem('zein-lang') || 'ar';
+  if (pageRecording) { stopMicPage(); return; }
+  stopSpeaking();
+  pageRecognition = new SR();
+  pageRecognition.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+  pageRecognition.continuous = false;
+  pageRecognition.interimResults = true;
+  pageRecognition.onstart = function() {
+    pageRecording = true;
+    micBtn.classList.add('recording');
+    micBtn.innerHTML = '🔴';
+    input.placeholder = '🎤 بتسمع... اتكلم';
+  };
+  pageRecognition.onresult = function(e) {
+    var text = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+    input.value = text;
+    autoResize(input);
+  };
+  pageRecognition.onerror = function(e) {
+    console.error(e);
+    stopMicPage();
+    if (e.error === 'not-allowed') alert('لازم تسمح للميكروفون.');
+  };
+  pageRecognition.onend = function() {
+    var wasRec = pageRecording;
+    stopMicPage();
+    if (wasRec && input.value.trim()) setTimeout(submitChat, 400);
+  };
+  try { pageRecognition.start(); } catch (e) { console.error(e); stopMicPage(); }
+}
+
+function stopMicPage() {
+  pageRecording = false;
+  var micBtn = document.getElementById('chatMicBtn');
+  var input = document.getElementById('chatInput');
+  if (micBtn) { micBtn.classList.remove('recording'); micBtn.innerHTML = '🎤'; }
+  if (input) input.placeholder = 'اكتب رسالتك أو اضغط 🎤 واتكلم...';
+  if (pageRecognition) { try { pageRecognition.stop(); } catch(e) {} pageRecognition = null; }
+}
+
+window.addEventListener('beforeunload', stopSpeaking);
+</script>
 </body>
 </html>

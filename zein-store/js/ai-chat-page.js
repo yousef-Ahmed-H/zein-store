@@ -1,4 +1,4 @@
-// ===== AI Chat Page Logic =====
+// ===== ZEIN AI Chat Page with Voice =====
 
 const PAGE_MODEL = 'allam-2-7b';
 const PAGE_WHATSAPP = '201094040203';
@@ -8,33 +8,103 @@ let pageLoading = false;
 let pageProducts = [];
 let pageRecognition = null;
 let pageRecording = false;
+let voiceEnabled = true;
 
 // ===== Init =====
 window.addEventListener('load', function() {
+  loadVoicePreference();
   loadPageProducts();
   showWelcome();
 });
 
+function loadVoicePreference() {
+  var saved = localStorage.getItem('zein-voice-enabled');
+  if (saved !== null) voiceEnabled = saved === 'true';
+  updateVoiceButton();
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  localStorage.setItem('zein-voice-enabled', voiceEnabled);
+  updateVoiceButton();
+  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function updateVoiceButton() {
+  var btn = document.getElementById('voiceToggleBtn');
+  if (!btn) return;
+  btn.innerHTML = voiceEnabled ? '🔊' : '🔇';
+  btn.style.background = voiceEnabled ? 'linear-gradient(135deg, #C9A961, #b89651)' : 'rgba(255,255,255,0.12)';
+}
+
+// ===== TTS (Text to Speech) =====
+function speakText(text) {
+  if (!voiceEnabled) return;
+  if (!window.speechSynthesis) return;
+  
+  window.speechSynthesis.cancel();
+  
+  var clean = text
+    .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+    .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')
+    .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[•▪️➡️]/g, '')
+    .replace(/[*_~`#]/g, '')
+    .replace(/\n+/g, '. ')
+    .trim();
+  
+  if (!clean) return;
+  
+  var utter = new SpeechSynthesisUtterance(clean);
+  var lang = localStorage.getItem('zein-lang') || 'ar';
+  utter.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+  utter.rate = 1.0;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+  
+  var voices = window.speechSynthesis.getVoices();
+  if (lang === 'ar') {
+    var arVoice = voices.find(function(v) { return v.lang && v.lang.toLowerCase().startsWith('ar'); });
+    if (arVoice) utter.voice = arVoice;
+  }
+  
+  window.speechSynthesis.speak(utter);
+}
+
+function stopSpeaking() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+// ===== Load Products =====
 function loadPageProducts() {
   if (typeof loadProductsFromFirebase === 'function') {
     loadProductsFromFirebase(function() {
       pageProducts = (PRODUCTS_DATA || []).filter(function(p) { return p.published !== false; });
-      console.log('✅ Chat page loaded ' + pageProducts.length + ' products');
+      console.log('✅ Loaded ' + pageProducts.length + ' products');
     });
   }
 }
 
+// ===== Welcome =====
 function showWelcome() {
   var msg = 'أهلاً بيك في ZEIN Store! 👋\nأنا زين، مساعدك الشخصي في المتجر.\n\nاسألني عن أي حاجة:\n• 👔 المنتجات والأسعار\n• 📏 المقاسات والألوان\n• 🚚 الشحن والإرجاع\n• 💳 طرق الدفع\n\nأو اضغط على زرار 🎤 عشان تتكلم!';
   addPageMsg('bot', msg);
+  speakText('أهلاً بيك في زين ستور! أنا زين، مساعدك الشخصي. اسألني عن أي حاجة في المتجر.');
 }
 
 // ===== System Prompt =====
 function buildPagePrompt() {
   var productsText = '';
-  
   if (pageProducts.length > 0) {
-    productsText = '\n\n📦 المنتجات المتاحة حالياً:\n';
+    productsText = '\n\n📦 المنتجات المتاحة:\n';
     for (var i = 0; i < pageProducts.length; i++) {
       var p = pageProducts[i];
       productsText += '\n' + (i+1) + '. ' + (p.name ? p.name.ar : 'منتج') + '\n';
@@ -64,12 +134,11 @@ function buildPagePrompt() {
     productsText;
 }
 
-// ===== Send Message =====
+// ===== Send =====
 async function submitChat() {
   var input = document.getElementById('chatInput');
   var text = input.value.trim();
   if (!text || pageLoading) return;
-  
   input.value = '';
   input.style.height = 'auto';
   await sendToAI(text);
@@ -82,11 +151,13 @@ function sendQuickReply(text) {
 
 async function sendToAI(userMsg) {
   if (pageLoading) return;
+  stopSpeaking();
   
-  // واتساب
   if (userMsg.toLowerCase().includes('واتساب') || userMsg.toLowerCase().includes('تواصل') || userMsg.toLowerCase().includes('whatsapp')) {
     addPageMsg('user', userMsg);
-    addPageMsg('bot', 'تمام! بفتحلك واتساب حالاً 💬');
+    var reply = 'تمام! بفتحلك واتساب حالاً 💬';
+    addPageMsg('bot', reply);
+    speakText(reply);
     setTimeout(function() {
       window.open('https://wa.me/' + PAGE_WHATSAPP + '?text=' + encodeURIComponent('مرحباً، أحتاج مساعدة'), '_blank');
     }, 800);
@@ -95,7 +166,6 @@ async function sendToAI(userMsg) {
   
   addPageMsg('user', userMsg);
   pageHistory.push({ role: 'user', content: userMsg });
-  
   showTyping();
   pageLoading = true;
   disableInput(true);
@@ -126,6 +196,7 @@ async function sendToAI(userMsg) {
       var reply = data.choices[0].message.content;
       pageHistory.push({ role: 'assistant', content: reply });
       addPageMsg('bot', reply);
+      speakText(reply);
     }
   } catch (err) {
     hideTyping();
@@ -142,7 +213,7 @@ function addPageMsg(type, text) {
   var area = document.getElementById('chatMessages');
   if (!area) return;
   var msg = document.createElement('div');
-  msg.className = 'page-msg page-msg-' + type;
+  msg.className = 'msg msg-' + type;
   msg.textContent = text;
   area.appendChild(msg);
   area.scrollTop = area.scrollHeight;
@@ -151,7 +222,7 @@ function addPageMsg(type, text) {
 function showTyping() {
   var area = document.getElementById('chatMessages');
   var t = document.createElement('div');
-  t.className = 'page-msg-typing';
+  t.className = 'msg-typing';
   t.id = 'pageTypingIndicator';
   t.innerHTML = '<span></span><span></span><span></span>';
   area.appendChild(t);
@@ -170,21 +241,22 @@ function disableInput(disabled) {
 
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
 function clearChatPage() {
-  if (!confirm('هل تريد بدء محادثة جديدة؟')) return;
+  if (!confirm('بدء محادثة جديدة؟')) return;
+  stopSpeaking();
   document.getElementById('chatMessages').innerHTML = '';
   pageHistory = [];
   showWelcome();
 }
 
-// ===== Microphone =====
+// ===== Mic =====
 function toggleMicPage() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    alert('معلش، المتصفح بتاعك مش بيدعم الميكروفون. جرب Chrome أو Edge.');
+    alert('معلش، استخدم Chrome أو Edge للميكروفون.');
     return;
   }
   
@@ -192,10 +264,9 @@ function toggleMicPage() {
   var input = document.getElementById('chatInput');
   var lang = localStorage.getItem('zein-lang') || 'ar';
   
-  if (pageRecording) {
-    stopMicPage();
-    return;
-  }
+  if (pageRecording) { stopMicPage(); return; }
+  
+  stopSpeaking();
   
   pageRecognition = new SR();
   pageRecognition.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
@@ -211,9 +282,7 @@ function toggleMicPage() {
   
   pageRecognition.onresult = function(e) {
     var text = '';
-    for (var i = e.resultIndex; i < e.results.length; i++) {
-      text += e.results[i][0].transcript;
-    }
+    for (var i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
     input.value = text;
     autoResize(input);
   };
@@ -221,42 +290,28 @@ function toggleMicPage() {
   pageRecognition.onerror = function(e) {
     console.error(e);
     stopMicPage();
-    if (e.error === 'not-allowed') {
-      alert('معلش، محتاج تسمح للميكروفون.');
-    }
+    if (e.error === 'not-allowed') alert('لازم تسمح للميكروفون.');
   };
   
   pageRecognition.onend = function() {
     var wasRec = pageRecording;
     stopMicPage();
-    if (wasRec && input.value.trim()) {
-      setTimeout(submitChat, 300);
-    }
+    if (wasRec && input.value.trim()) setTimeout(submitChat, 400);
   };
   
-  try {
-    pageRecognition.start();
-  } catch (e) {
-    console.error(e);
-    stopMicPage();
-  }
+  try { pageRecognition.start(); } catch (e) { console.error(e); stopMicPage(); }
 }
 
 function stopMicPage() {
   pageRecording = false;
   var micBtn = document.getElementById('chatMicBtn');
   var input = document.getElementById('chatInput');
-  var lang = localStorage.getItem('zein-lang') || 'ar';
-  
   if (micBtn) {
     micBtn.classList.remove('recording');
     micBtn.innerHTML = '🎤';
   }
-  if (input) {
-    input.placeholder = 'اكتب أو اتكلم...';
-  }
-  if (pageRecognition) {
-    try { pageRecognition.stop(); } catch(e) {}
-    pageRecognition = null;
-  }
+  if (input) input.placeholder = 'اكتب رسالتك أو اضغط 🎤 واتكلم...';
+  if (pageRecognition) { try { pageRecognition.stop(); } catch(e) {} pageRecognition = null; }
 }
+
+window.addEventListener('beforeunload', stopSpeaking);

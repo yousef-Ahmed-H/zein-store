@@ -1,7 +1,7 @@
 // ===== AI Chat Assistant "زين" =====
 
 // ⚠️ حط مفتاح Groq بتاعك هنا
-const AI_API_KEY = '';
+const AI_API_KEY = 'PROXY';
 const AI_MODEL = 'allam-2-7b';
 const WHATSAPP_NUMBER = '201094040203';
 
@@ -162,13 +162,12 @@ async function aiSendMessage(userMessage) {
       messages.push(recentHistory[i]);
     }
     
-    var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + AI_API_KEY
-      },
-      body: JSON.stringify({
+    var response = await fetch('/api/chat', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
         model: AI_MODEL,
         messages: messages,
         temperature: 0.7,

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحتي - ZEIN Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👔</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">ZEIN</span>
+                    <span class="logo-sub">ستور</span>
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="products">المنتجات</a></li>
+                    <li><a href="about.html" class="active" data-i18n="about">عني</a></li>
+                    <li><a href="contact.html" data-i18n="contact">اتصل بنا</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="btn-icon" id="langBtn" title="Switch Language">🌐</button>
+                    <button class="btn-icon" id="darkModeBtn" title="Dark Mode">🌙</button>
+                    <a href="login.html" class="btn-icon" id="loginBtn" title="Login">👤</a>
+                    <a href="cart.html" class="btn-icon cart-badge" id="cartBtn" title="Cart">
+                        🛒 <span class="badge" id="cartBadge">0</span>
+                    </a>
+                    <button class="hamburger" id="hamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section class="section about-page" id="aboutPage">
+        <div class="container">
+            <div class="about-header">
+                <div class="about-avatar">Y</div>
+                <h2>يوسف أحمد</h2>
+                <p class="tagline">WEB DEVELOPER</p>
+                <p class="bio">
+                    مطور ويب متخصص في بناء تجارب رقمية احترافية. أعمل على تصميم وتطوير متاجر إلكترونية ومواقع ويب باستخدام أحدث التقنيات.
+                </p>
+                <div class="skills">
+                    <span class="skill-tag">HTML</span>
+                    <span class="skill-tag">CSS</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">E-commerce</span>
+                </div>
+                <div class="about-buttons">
+                    <a href="contact.html" class="btn btn-primary">تواصل معي</a>
+                    <a href="products.html" class="btn btn-outline">تصفح المتجر</a>
+                </div>
+            </div>
+            
+            <div class="current-project">
+                <h3>المشروع الحالي</h3>
+                <p class="project-name">ZEIN Store</p>
+                <p>بناء متجر إلكتروني كامل لملابس رجالية بتقنيات حديثة وتجربة مستخدم فاخرة.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4 class="logo-text">ZEIN</h4>
+                    <p>متجر الملابس الرجالية الأفضل في مصر.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="products.html">المنتجات</a></li>
+                        <li><a href="about.html">عنا</a></li>
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>معلومات التواصل</h4>
+                    <p>📞 <a href="tel:01094040203">01094040203</a></p>
+                    <p>📧 <a href="mailto:yousefahmed9999aaa@gmail.com">yousefahmed9999aaa@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ZEIN Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Protect this page
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isLoggedIn()) {
+                showToast('يرجى تسجيل الدخول أولاً', 'error');
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

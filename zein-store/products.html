@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنتجات - ZEIN Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ai-chat.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👔</text></svg>">
+</head>
+<body>
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">ZEIN</span>
+                    <span class="logo-sub">ستور</span>
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" class="active" data-i18n="products">المنتجات</a></li>
+                    <li><a href="about.html" data-i18n="about">عني</a></li>
+                    <li><a href="contact.html" data-i18n="contact">اتصل بنا</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="btn-icon" id="langBtn" title="Switch Language">🌐</button>
+                    <button class="btn-icon" id="darkModeBtn" title="Dark Mode">🌙</button>
+                    <a href="add-product.html" class="btn-icon add-product-btn" title="إضافة منتج">➕</a>
+                    <a href="login.html" class="btn-icon" id="loginBtn" title="Login">👤</a>
+                    <a href="cart.html" class="btn-icon cart-badge" id="cartBtn" title="Cart">
+                        🛒 <span class="badge" id="cartBadge">0</span>
+                    </a>
+                    <button class="hamburger" id="hamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section products-page" id="productsPage">
+        <div class="container">
+            <h2 class="section-title">جميع المنتجات</h2>
+            
+            <div class="filters" id="filters">
+                <div class="filter-group">
+                    <input type="text" id="searchInput" placeholder="بحث..." data-i18n-placeholder="search">
+                </div>
+                <div class="filter-group">
+                    <select id="categoryFilter">
+                        <option value="">كل الفئات</option>
+                        <option value="shirts">القمصان</option>
+                        <option value="pants">البنطلونات</option>
+                        <option value="shorts">الشورتات</option>
+                        <option value="jackets">الجاكيتات</option>
+                        <option value="shoes">الأحذية</option>
+                        <option value="suits">البدل</option>
+                        <option value="hoodies">الهودي</option>
+                        <option value="sweaters">السويت شيرت</option>
+                        <option value="accessories">الإكسسوارات</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="brandFilter">
+                        <option value="">كل الماركات</option>
+                        <option value="Zara">Zara</option>
+                        <option value="H&M">H&M</option>
+                        <option value="Nike">Nike</option>
+                        <option value="Levi's">Levi's</option>
+                        <option value="Adidas">Adidas</option>
+                        <option value="Puma">Puma</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="sortFilter">
+                        <option value="default">الافتراضي</option>
+                        <option value="priceLow">السعر: من الأقل</option>
+                        <option value="priceHigh">السعر: من الأعلى</option>
+                        <option value="rating">الأعلى تقييماً</option>
+                    </select>
+                </div>
+                <button class="btn btn-sm" id="resetFilters">إعادة تعيين</button>
+            </div>
+
+            <div class="products-grid" id="productsGrid"></div>
+            
+            <div class="no-results" id="noResults" style="display:none;">
+                <span class="icon">🔍</span>
+                <h3>لا توجد نتائج</h3>
+                <button class="btn btn-primary" onclick="resetAllFilters()">إعادة تعيين الفلاتر</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer" id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4 class="logo-text">ZEIN</h4>
+                    <p>متجر الملابس الرجالية الأفضل في مصر</p>
+                </div>
+                <div class="footer-col">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="products.html">المنتجات</a></li>
+                        <li><a href="about.html">عني</a></li>
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>معلومات التواصل</h4>
+                    <p>📞 <a href="tel:01094040203">01094040203</a></p>
+                    <p>📧 <a href="mailto:yousefahmed9999aaa@gmail.com">yousefahmed9999aaa@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ZEIN Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/201094040203" class="whatsapp-float" target="_blank" aria-label="تواصل عبر واتساب">
+        <span class="whatsapp-icon">💬</span>
+    </a>
+
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/products-data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/ai-chat.js"></script>
+    
+</body>
+</html>

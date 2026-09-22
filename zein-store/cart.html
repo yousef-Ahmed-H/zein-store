@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السلة - ZEIN Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ai-chat.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👔</text></svg>">
+</head>
+<body>
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">ZEIN</span>
+                    <span class="logo-sub">ستور</span>
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="products">المنتجات</a></li>
+                    <li><a href="about.html" data-i18n="about">عني</a></li>
+                    <li><a href="contact.html" data-i18n="contact">اتصل بنا</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="btn-icon" id="langBtn" title="Switch Language">🌐</button>
+                    <button class="btn-icon" id="darkModeBtn" title="Dark Mode">🌙</button>
+                    <a href="add-product.html" class="btn-icon add-product-btn" title="إضافة منتج">➕</a>
+                    <a href="login.html" class="btn-icon" id="loginBtn" title="Login">👤</a>
+                    <a href="cart.html" class="btn-icon cart-badge active" id="cartBtn" title="Cart">
+                        🛒 <span class="badge" id="cartBadge">0</span>
+                    </a>
+                    <button class="hamburger" id="hamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section cart-page" id="cartPage">
+        <div class="container">
+            <h2 class="section-title">سلة التسوق</h2>
+            <div class="cart-grid" id="cartGrid"></div>
+        </div>
+    </section>
+
+    <footer class="footer" id="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 ZEIN Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/201094040203" class="whatsapp-float" target="_blank" aria-label="تواصل عبر واتساب">
+        <span class="whatsapp-icon">💬</span>
+    </a>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+        <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/products-data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/ai-chat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof loadProductsFromFirebase === 'function') {
+                loadProductsFromFirebase(loadCartPage);
+            } else {
+                loadCartPage();
+            }
+        });
+    </script>
+</body>
+</html>

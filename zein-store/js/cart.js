@@ -166,6 +166,7 @@ function checkout() {
 }
 
 function showCustomerInfoModal() {
+  if (document.getElementById('customerModal')) return;
   var subtotal = getCartTotal();
   var shipping = subtotal > 500 ? 0 : 50;
   var discount = localStorage.getItem('zein-coupon') === 'SAVE10' ? subtotal * 0.1 : 0;

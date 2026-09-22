@@ -127,16 +127,6 @@ body{background:linear-gradient(180deg,#f5f5f5,#ebebeb);display:flex;flex-direct
 
 <script>
 // ===== AI Chat Page - Self Contained =====
-const PAGE_MODEL = 'allam-2-7b';
-const PAGE_WHATSAPP = '201094040203';
-// مفتاح Groq مقسم عشان GitHub ما يكتشفهوش
-const _k1 = 'gsk_yfkpcc';
-const _k2 = 'ZHwZVhljp';
-const _k3 = 'OJ1KAWGdyb';
-const _k4 = '3FYQyWw3DT';
-const _k5 = 'inl4OiDU5w';
-const _k6 = 'GL2HZxB';
-const AI_API_KEY = _k1 + _k2 + _k3 + _k4 + _k5 + _k6;
 
 let pageHistory = [];
 let pageLoading = false;
@@ -333,7 +323,8 @@ async function sendToAI(userMsg) {
   if (pageLoading) return;
   stopSpeaking();
   
-  if (userMsg.toLowerCase().includes('واتساب') || userMsg.toLowerCase().includes('تواصل') || userMsg.toLowerCase().includes('whatsapp')) {
+  // واتساب
+  if (userMsg.toLowerCase().includes('واتساب') || userMsg.toLowerCase().includes('تواصل')) {
     addPageMsg('user', userMsg);
     var reply = 'تمام! بفتحلك واتساب حالاً 💬';
     addPageMsg('bot', reply);
@@ -351,21 +342,18 @@ async function sendToAI(userMsg) {
   disableInput(true);
   
   try {
-    var messages = [{ role: 'system', content: buildPagePrompt() }];
-    var recent = pageHistory.slice(-10);
-    for (var i = 0; i < recent.length; i++) messages.push(recent[i]);
+    var messages = [
+      { role: 'system', content: buildPagePrompt() },
+      ...pageHistory.slice(-10)
+    ];
     
-    var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // استخدام Pollinations AI - مجاني، بدون مفتاح، بدون تسجيل
+    var response = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + AI_API_KEY
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: PAGE_MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 500
+        model: 'openai',
+        messages: messages
       })
     });
     

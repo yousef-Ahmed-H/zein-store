@@ -166,21 +166,188 @@ function checkout() {
 }
 
 function showCustomerInfoModal() {
+  var subtotal = getCartTotal();
+  var shipping = subtotal > 500 ? 0 : 50;
+  var discount = localStorage.getItem('zein-coupon') === 'SAVE10' ? subtotal * 0.1 : 0;
+  var total = subtotal + shipping - discount;
+  
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'customerModal';
-  modal.innerHTML = '<div class="checkout-modal"><button class="modal-close" onclick="closeCustomerModal()">✕</button><div class="checkout-header"><div class="checkout-icon">📦</div><h3>إتمام الطلب</h3><p>أدخل بيانات التوصيل لإرسال طلبك عبر واتساب</p></div><form id="customerForm" class="checkout-form"><div class="checkout-form-group"><label>👤 الاسم الكامل *</label><input type="text" id="customerName" required placeholder="اكتب اسمك الكامل"></div><div class="checkout-form-group"><label>📱 رقم الهاتف *</label><input type="tel" id="customerPhone" required placeholder="01XXXXXXXXX"></div><div class="checkout-form-group"><label>📍 العنوان التفصيلي *</label><textarea id="customerAddress" required rows="3" placeholder="الشارع - الحي - المدينة"></textarea></div><div class="checkout-form-group"><label>📝 ملاحظات (اختياري)</label><textarea id="customerNotes" rows="2" placeholder="أي ملاحظات"></textarea></div><button type="submit" class="btn btn-primary btn-block btn-lg">💬 إرسال الطلب عبر واتساب</button></form><div class="checkout-footer"><p>🔒 بياناتك آمنة</p></div></div>';
+  
+  modal.innerHTML = `
+    <div class="checkout-modal">
+      <button class="modal-close" onclick="closeCustomerModal()">✕</button>
+      <div class="checkout-header">
+        <div class="checkout-icon">📦</div>
+        <h3>إتمام الطلب</h3>
+        <p>أدخل بياناتك واختر طريقة الدفع المناسبة</p>
+      </div>
+      
+      <form id="customerForm" class="checkout-form">
+        
+        <!-- بيانات العميل -->
+        <div class="checkout-form-group">
+          <label>👤 الاسم الكامل *</label>
+          <input type="text" id="customerName" required placeholder="اكتب اسمك الكامل">
+        </div>
+        
+        <div class="checkout-form-group">
+          <label>📱 رقم الهاتف *</label>
+          <input type="tel" id="customerPhone" required placeholder="01XXXXXXXXX">
+        </div>
+        
+        <div class="checkout-form-group">
+          <label>📍 العنوان التفصيلي *</label>
+          <textarea id="customerAddress" required rows="3" placeholder="الشارع - الحي - المدينة"></textarea>
+        </div>
+        
+        <!-- طرق الدفع -->
+        <div class="payment-methods">
+          <h4>💳 اختر طريقة الدفع</h4>
+          
+          
+          
+          <label class="payment-option selected" data-method="instapay_shipping">
+           <input type="radio" name="payment" value="instapay_shipping" checked>         
+            <div class="payment-option-content">
+              <div class="payment-option-title">💙 إنستا باي - دفع الشحن فقط</div>
+              <div class="payment-option-desc">تدفع <b>${shipping === 0 ? 0 : shipping} ج.م</b> شحن الآن، والباقي عند الاستلام</div>
+            </div>
+            <span class="payment-option-icon">💙</span>
+          </label>
+          
+          <label class="payment-option" data-method="instapay_full">
+            <input type="radio" name="payment" value="instapay_full">
+            <div class="payment-option-content">
+              <div class="payment-option-title">💙 إنستا باي - دفع كامل</div>
+              <div class="payment-option-desc">تدفع <b>${total.toFixed(2)} ج.م</b> كاملة الآن</div>
+            </div>
+            <span class="payment-option-icon">💙</span>
+          </label>
+        </div>
+        
+        <!-- تفاصيل إنستا باي (تظهر عند الاختيار) -->
+        <div class="instapay-box" id="instapayBox">
+          <h5>💙 تفاصيل التحويل على إنستا باي</h5>
+          <div class="instapay-number">01094040203</div>
+          <div class="instapay-hint">
+            حوّل المبلغ على الرقم ده عبر تطبيق <b>إنستا باي</b>،<br>
+            وبعد التحويل ارفع صورة الوصل هنا ⬇️
+          </div>
+          
+          <div class="receipt-upload">
+            <label>📸 صورة الوصل *</label>
+            <label class="receipt-upload-btn" for="receiptInput">
+              <span>📁</span> اضغط لرفع صورة الوصل
+            </label>
+            <input type="file" id="receiptInput" accept="image/*" onchange="handleReceiptUpload(this)">
+            <div id="receiptPreviewContainer"></div>
+          </div>
+        </div>
+        
+        <!-- ملاحظات -->
+        <div class="checkout-form-group">
+          <label>📝 ملاحظات (اختياري)</label>
+          <textarea id="customerNotes" rows="2" placeholder="أي ملاحظات إضافية"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block btn-lg">💬 تأكيد وإرسال الطلب عبر واتساب</button>
+      </form>
+      
+      <div class="checkout-footer">
+        <p>🔒 بياناتك آمنة ومحمية</p>
+      </div>
+    </div>
+  `;
   
   document.body.appendChild(modal);
   
+  // إغلاق عند الضغط خارج النافذة
   modal.addEventListener('click', function(e) {
     if (e.target === modal) closeCustomerModal();
   });
   
+  // ربط أزرار طرق الدفع
+  document.querySelectorAll('.payment-option').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('.payment-option').forEach(function(o) {
+        o.classList.remove('selected');
+      });
+      this.classList.add('selected');
+      this.querySelector('input').checked = true;
+      updateInstapayBox();
+    });
+  });
+  
+    // إرسال الفورم
   document.getElementById('customerForm').addEventListener('submit', function(e) {
     e.preventDefault();
     sendWhatsAppOrder();
   });
+  
+  // ✅ إظهار صندوق إنستا باي تلقائياً لو الافتراضي مختار
+  updateInstapayBox();
+}
+// إظهار/إخفاء صندوق إنستا باي
+function updateInstapayBox() {
+  var selected = document.querySelector('input[name="payment"]:checked').value;
+  var box = document.getElementById('instapayBox');
+  
+  if (selected === 'instapay_shipping' || selected === 'instapay_full') {
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show');
+  }
+}
+
+// رفع صورة الوصل
+var receiptImageBase64 = null;
+
+function handleReceiptUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      var maxSize = 800;
+      var w = img.width;
+      var h = img.height;
+      
+      if (w > maxSize) { h = h * (maxSize / w); w = maxSize; }
+      if (h > maxSize) { w = w * (maxSize / h); h = maxSize; }
+      
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h);
+      
+      receiptImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      
+      var container = document.getElementById('receiptPreviewContainer');
+      container.innerHTML = `
+        <div class="receipt-preview">
+          <img src="${receiptImageBase64}" alt="صورة الوصل">
+          <button type="button" class="remove-receipt" onclick="clearReceipt()">✕</button>
+        </div>
+        <div class="receipt-check">
+          <span>✅</span>
+          <span>تم رفع الوصل بنجاح</span>
+        </div>
+      `;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearReceipt() {
+  receiptImageBase64 = null;
+  document.getElementById('receiptInput').value = '';
+  document.getElementById('receiptPreviewContainer').innerHTML = '';
 }
 
 function closeCustomerModal() {
@@ -193,19 +360,26 @@ function sendWhatsAppOrder() {
   var phone = document.getElementById('customerPhone').value;
   var address = document.getElementById('customerAddress').value;
   var notes = document.getElementById('customerNotes').value;
+  var paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  
+  // التحقق من رفع الوصل لو دفع إنستا باي
+  if ((paymentMethod === 'instapay_shipping' || paymentMethod === 'instapay_full') && !receiptImageBase64) {
+    alert('⚠️ لازم ترفع صورة الوصل قبل الإرسال!');
+    return;
+  }
   
   var cart = getCart();
+  var subtotal = 0;
   
   var message = '🛒 *طلب جديد من ZEIN Store*\n\n';
   message += '👤 *بيانات العميل:*\n';
-  message += 'الاسم: ' + name + '\n';
-  message += 'الهاتف: ' + phone + '\n';
-  message += 'العنوان: ' + address + '\n';
-  if (notes) message += 'ملاحظات: ' + notes + '\n';
+  message += '▪️ الاسم: ' + name + '\n';
+  message += '▪️ الهاتف: ' + phone + '\n';
+  message += '▪️ العنوان: ' + address + '\n';
+  if (notes) message += '▪️ ملاحظات: ' + notes + '\n';
+  
   message += '\n📦 *تفاصيل الطلب:*\n';
   message += '━━━━━━━━━━━━━━━━━━\n';
-  
-  var subtotal = 0;
   
   for (var i = 0; i < cart.length; i++) {
     var product = null;
@@ -222,10 +396,10 @@ function sendWhatsAppOrder() {
     subtotal += itemTotal;
     
     message += (i + 1) + '. *' + productName + '*\n';
-    message += '   العلامة: ' + product.brand + '\n';
-    message += '   الكمية: ' + cart[i].quantity + '\n';
-    message += '   السعر: ' + product.price + ' ج.م\n';
-    message += '   الإجمالي: ' + itemTotal + ' ج.م\n\n';
+    message += '   🏷️ ' + product.brand + '\n';
+    message += '   🔢 الكمية: ' + cart[i].quantity + '\n';
+    message += '   💰 السعر: ' + product.price + ' ج.م\n';
+    message += '   ➡️ الإجمالي: ' + itemTotal + ' ج.م\n\n';
   }
   
   var shipping = subtotal > 500 ? 0 : 50;
@@ -238,8 +412,26 @@ function sendWhatsAppOrder() {
   message += '🚚 *الشحن:* ' + (shipping === 0 ? 'مجاني' : shipping + ' ج.م') + '\n';
   message += '━━━━━━━━━━━━━━━━━━\n';
   message += '✅ *الإجمالي النهائي:* ' + total.toFixed(2) + ' ج.م\n\n';
-  message += '✅ *طريقة الدفع:* الدفع عند الاستلام\n\n';
-  message += 'شكراً لتسوقك من ZEIN Store! 🙏';
+  
+  // طريقة الدفع
+  message += '💳 *طريقة الدفع:*\n';
+  if (paymentMethod === 'cod') {
+    message += '💵 الدفع عند الاستلام\n';
+    message += '   (تدفع ' + total.toFixed(2) + ' ج.م عند وصول الطلب)\n';
+  } else if (paymentMethod === 'instapay_shipping') {
+    message += '💙 إنستا باي - دفع الشحن\n';
+    message += '   (حوّل ' + shipping + ' ج.م شحن + الباقي عند الاستلام)\n';
+    message += '   📞 رقم إنستا باي: 01094040203\n';
+    message += '\n⚠️ *ملاحظة:* صورة الوصل هتبعتها في الشات ده\n';
+  } else if (paymentMethod === 'instapay_full') {
+    message += '💙 إنستا باي - دفع كامل\n';
+    message += '   (حوّل ' + total.toFixed(2) + ' ج.م كاملة)\n';
+    message += '   📞 رقم إنستا باي: 01094040203\n';
+    message += '\n⚠️ *ملاحظة:* صورة الوصل هتبعتها في الشات ده\n';
+  }
+  
+  message += '\n━━━━━━━━━━━━━━━━━━\n';
+  message += 'شكراً لتسوقك من ZEIN Store! 🙏💙';
   
   closeCustomerModal();
   
@@ -249,4 +441,11 @@ function sendWhatsAppOrder() {
   
   clearCart();
   window.open(whatsappUrl, '_blank');
+  
+  // تنبيه للعميل بإرفاق صورة الوصل
+  if (paymentMethod === 'instapay_shipping' || paymentMethod === 'instapay_full') {
+    setTimeout(function() {
+      alert('📸 متنساش ترفع صورة الوصل في محادثة الواتساب قبل ما تدوس إرسال!');
+    }, 1000);
+  }
 }

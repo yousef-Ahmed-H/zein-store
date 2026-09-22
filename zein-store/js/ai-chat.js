@@ -292,30 +292,6 @@ function aiBuildUI() {
     pointer-events: none;
   `;
   
-  // === Label (بار كبير) ===
-  var labelText = lang === 'ar' ? '👋 أهلاً! أنا زين — اسألني أي حاجة' : '👋 Hi! I\'m Zein — Ask me anything';
-  
-  var label = document.createElement('div');
-  label.textContent = labelText;
-  label.style.cssText = `
-    background: linear-gradient(135deg, #C9A961, #b89651);
-    color: #fff;
-    padding: 18px 32px;
-    border-radius: 40px;
-    font-size: 18px;
-    font-weight: 800;
-    box-shadow: 0 12px 40px rgba(201,169,97,0.65);
-    white-space: nowrap;
-    cursor: pointer;
-    font-family: inherit;
-    border: 4px solid #fff;
-    pointer-events: auto;
-    animation: aiLabelBounce 2s infinite;
-    transition: transform 0.3s;
-  `;
-  label.onmouseover = function() { this.style.transform = 'translateY(-5px)'; };
-  label.onmouseout = function() { this.style.transform = 'translateY(0)'; };
-  label.onclick = aiToggleChat;
   
   // === Button (زرار كبير) ===
   var btn = document.createElement('button');
@@ -354,7 +330,6 @@ function aiBuildUI() {
   `;
   btn.appendChild(dot);
   
-  wrapper.appendChild(label);
   wrapper.appendChild(btn);
   document.body.appendChild(wrapper);
   
